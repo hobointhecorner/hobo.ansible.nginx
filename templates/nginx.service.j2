@@ -1,0 +1,15 @@
+[Unit]
+Description=Nginx {{ nginx_server_name }}
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+User={{ nginx_user }}
+Group={{ nginx_group }}
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStart={{ nginx_config_dir }}/scripts/start_nginx.sh
+
+[Install]
+WantedBy=multi-user.target

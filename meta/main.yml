@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: hobo.ansible.nginx
+  author: hobointhecorner
+  description: Install and configure nginx
+  license: MPL-2.0
+
+  galaxy_tags: []
+
+dependencies: []

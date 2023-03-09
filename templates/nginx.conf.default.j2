@@ -1,0 +1,31 @@
+#
+# THIS FILE IS MANAGED BY ANSIBLE
+#
+
+user  {{ nginx_user }};
+worker_processes  {{ nginx_config_default_worker_processes }};
+
+error_log  {{ nginx_config_default_error_log }};
+pid        /var/run/nginx.pid;
+{% if nginx_config_default_global is defined and nginx_config_default_global is not none %}
+
+{{ nginx_config_default_global }}
+{% endif %}
+
+http {
+  include       /etc/nginx/mime.types;
+  include       {{ nginx_mounts.servers.dest }}*.conf;
+{% if nginx_config_default_http is defined and nginx_config_default_http is not none %}
+
+  {{ nginx_config_default_http|indent(2) }}
+{% endif %}
+{% if nginx_config_default_upgrade_http|bool %}
+
+  server {
+    listen 80 default_server;
+    server_name _;
+
+    return 301 https://$host$request_uri;
+  }
+{% endif %}
+}

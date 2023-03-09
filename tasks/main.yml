@@ -1,0 +1,197 @@
+---
+- name: Set playbook configuration
+  tags:
+    - nginx
+  set_fact:
+    nginx_config_dir: "{{ nginx_config_root }}/{{ nginx_server_name }}"
+    nginx_use_default_config: "{{ (nginx_config_template is not defined) or (nginx_config_template is none) }}"
+
+- name: Set mount info
+  tags:
+    - nginx
+  set_fact:
+    nginx_mounts:
+      config:
+        src: "{{ nginx_config_dir }}/config/nginx.conf"
+        dest: /etc/nginx/nginx.conf
+        mode: ro
+      servers:
+        src: "{{ nginx_config_dir }}/config/servers/"
+        dest: /etc/nginx/servers/
+        mode: ro
+      logs:
+        src: "{{ nginx_config_dir }}/logs/"
+        dest: /var/log/nginx/
+        mode: rw
+      pages:
+        src: "{{ nginx_config_dir }}/pages"
+        dest: /etc/nginx/www/
+        mode: ro
+
+- name: Set container volumes
+  tags:
+    - nginx
+  set_fact:
+    nginx_all_volumes: >-
+      {%- set volume_list = [] -%}
+      {%- for name, info in nginx_mounts.items() -%}
+      {%- set volume_info = info.src + ':' + info.dest + ':' + info.mode -%}
+      {{ volume_list.append(volume_info) }}
+      {%- endfor -%}
+      {{ volume_list + nginx_container_volumes }}
+
+- name: Set configuration directories
+  tags:
+    - nginx
+  set_fact:
+    nginx_config_directories:
+      - "{{ nginx_config_root }}"
+      - "{{ nginx_config_dir }}"
+      - "{{ nginx_config_dir }}/config"
+      - "{{ nginx_config_dir }}/scripts"
+      - "{{ nginx_mounts.servers.src }}"
+      - "{{ nginx_mounts.logs.src }}"
+      - "{{ nginx_mounts.pages.src }}"
+
+- name: Ensure nginx group
+  become: yes
+  tags:
+    - nginx
+  group:
+    name: "{{ nginx_group }}"
+
+- name: Ensure nginx user
+  become: yes
+  tags:
+    - nginx
+  user:
+    name: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
+    groups:
+      - docker
+    append: yes
+
+- name: Ensure nginx configuration directories
+  become: yes
+  loop: "{{ nginx_config_directories }}"
+  tags:
+    - nginx
+  file:
+    path: "{{ item }}"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "2755"
+    state: directory
+
+- name: Template nginx scripts
+  notify: Reload nginx service
+  become: yes
+  tags:
+    - nginx
+  template:
+    src: scripts/start_nginx.sh.j2
+    dest: "{{ nginx_config_dir }}/scripts/start_nginx.sh"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "755"
+
+- name: Template nginx service files
+  notify: Reload nginx service
+  become: yes
+  tags:
+    - nginx
+  loop:
+    - service
+  template:
+    src: "nginx.{{ item }}.j2"
+    dest: /etc/systemd/system/nginx.{{ nginx_server_name }}.{{ item }}
+    owner: root
+    group: root
+    mode: "755"
+
+- name: Template nginx default configuration
+  when: nginx_use_default_config|bool
+  notify: Reload nginx service
+  become: yes
+  tags:
+    - nginx
+  template:
+    src: templates/nginx.conf.default.j2
+    dest: "{{ nginx_mounts.config.src }}"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "744"
+
+- name: Template nginx configuration
+  when: not nginx_use_default_config|bool
+  notify: Reload nginx service
+  become: yes
+  tags:
+    - nginx
+  template:
+    src: "{{ nginx_config_template }}"
+    dest: "{{ nginx_mounts.config.src }}"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "744"
+
+- name: Template nginx server files
+  notify: Reload nginx service
+  become: yes
+  tags:
+    - nginx
+  loop: "{{ nginx_server_templates }}"
+  loop_control:
+    label: "{{ item|basename }}"
+  template:
+    src: "{{ item }}"
+    dest: "{{ nginx_mounts.servers.src }}/{{ item|basename|replace('.j2', '') }}"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "744"
+
+- name: Template nginx page files
+  become: yes
+  tags:
+    - nginx
+  loop: "{{ nginx_page_templates }}"
+  loop_control:
+    label: "{{ item|basename }}"
+  template:
+    src: "{{ item }}"
+    dest: "{{ nginx_config_dir }}/pages/{{ item|basename|replace('.j2', '') }}"
+    owner: "{{ nginx_owner }}"
+    group: "{{ nginx_group }}"
+    mode: "744"
+
+- name: Ensure periodic restart job
+  when: nginx_periodic_restart|bool
+  become: yes
+  tags:
+    - nginx
+  cron:
+    name: Restart {{ nginx_server_name }}
+    job: systemctl restart nginx.{{ nginx_server_name }}.service
+    month: "{{ nginx_periodic_restart_month }}"
+    day: "{{ nginx_periodic_restart_day }}"
+    hour: "{{ nginx_periodic_restart_hour }}"
+    minute: "{{ nginx_periodic_restart_minute }}"
+    weekday: "{{ nginx_periodic_restart_weekday }}"
+
+- name: Ensure nginx service started
+  become: yes
+  tags:
+    - nginx
+  systemd:
+    name: nginx.{{ nginx_server_name }}.service
+    daemon_reload: yes
+    state: started
+
+- name: Force nginx service reload
+  when: nginx_force_restart|bool
+  notify: Reload nginx service
+  changed_when: true
+  tags:
+    - nginx
+  debug:
+    msg: User requested restart of the nginx service

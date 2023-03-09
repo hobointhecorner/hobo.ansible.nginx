@@ -1,0 +1,8 @@
+---
+- name: Reload nginx service
+  become: yes
+  systemd:
+    name: nginx.{{ nginx_server_name }}.service
+    enabled: yes
+    daemon_reload: yes
+    state: restarted

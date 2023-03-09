@@ -1,0 +1,25 @@
+---
+nginx_config_root: /opt/hobo.nginx
+nginx_container_image: nginx:latest
+nginx_container_ports: []
+nginx_container_volumes: []
+nginx_page_templates: []
+nginx_server_templates: []
+nginx_force_restart: no
+nginx_user: nginx
+nginx_group: nginx
+nginx_owner: root
+
+nginx_config_template:
+nginx_config_default_worker_processes: auto
+nginx_config_default_error_log: /var/log/nginx/error.log notice
+nginx_config_default_upgrade_http: no
+nginx_config_default_global:
+nginx_config_default_http:
+
+nginx_periodic_restart: no
+nginx_periodic_restart_month: '*'
+nginx_periodic_restart_day: '1'
+nginx_periodic_restart_hour: '0'
+nginx_periodic_restart_minute: '0'
+nginx_periodic_restart_weekday: '0'

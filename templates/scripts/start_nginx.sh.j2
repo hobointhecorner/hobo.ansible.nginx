@@ -1,0 +1,10 @@
+#!/bin/bash
+
+/usr/bin/docker run  --rm --name nginx.{{ nginx_server_name }}.service \
+{% for port in nginx_container_ports %}
+  -p "{{ port }}" \
+{% endfor %}
+{% for volume in nginx_all_volumes %}
+  -v "{{ volume }}" \
+{% endfor %}
+  {{ nginx_container_image }} "$@"
