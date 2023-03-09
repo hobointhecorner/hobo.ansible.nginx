@@ -17,9 +17,9 @@ nginx_config_default_upgrade_http: no
 nginx_config_default_global:
 nginx_config_default_http:
 
-nginx_periodic_restart: no
-nginx_periodic_restart_month: '*'
-nginx_periodic_restart_day: '1'
-nginx_periodic_restart_hour: '0'
-nginx_periodic_restart_minute: '0'
-nginx_periodic_restart_weekday: '0'
+nginx_scheduled_restart: no
+nginx_scheduled_restart_month: '*'
+nginx_scheduled_restart_day: '1'
+nginx_scheduled_restart_hour: '0'
+nginx_scheduled_restart_minute: '0'
+nginx_scheduled_restart_weekday: '0'

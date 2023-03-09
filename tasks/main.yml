@@ -165,18 +165,18 @@
     mode: "744"
 
 - name: Ensure periodic restart job
-  when: nginx_periodic_restart|bool
+  when: nginx_scheduled_restart|bool
   become: yes
   tags:
     - nginx
   cron:
     name: Restart {{ nginx_server_name }}
     job: systemctl restart nginx.{{ nginx_server_name }}.service
-    month: "{{ nginx_periodic_restart_month }}"
-    day: "{{ nginx_periodic_restart_day }}"
-    hour: "{{ nginx_periodic_restart_hour }}"
-    minute: "{{ nginx_periodic_restart_minute }}"
-    weekday: "{{ nginx_periodic_restart_weekday }}"
+    month: "{{ nginx_scheduled_restart_month }}"
+    day: "{{ nginx_scheduled_restart_day }}"
+    hour: "{{ nginx_scheduled_restart_hour }}"
+    minute: "{{ nginx_scheduled_restart_minute }}"
+    weekday: "{{ nginx_scheduled_restart_weekday }}"
 
 - name: Ensure nginx service started
   become: yes
