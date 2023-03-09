@@ -3,7 +3,10 @@
 Configure and run nginx as a docker container
 
 ## Requirements
-Collections:
+Prerequisites:
+- [Docker](https://github.com/hobointhecorner/Hobo.Ansible.Docker)
+
+Ansible Collections:
 - `community.general`
 
 ## Installation
@@ -16,7 +19,7 @@ Collections:
 |---------------------------------------|--------------|----------|-----------------|-------------|
 | nginx_server_name                     | string       | **yes**  |                 | Name to use for configuration storage path and service name |
 | nginx_config_root                     | string       | no       | /opt/hobo.nginx | Directory where configuration files should be stored for all deployments.  Individual deployment configurations will be written to a subdirectory named the value of the `nginx_server_name` variable |
-| nginx_container_image                 | string       | no       | nginx:latest    | The nginx docker image to be used |
+| nginx_container_image                 | string       | no       | nginx:latest    | The nginx docker image to be run as a service |
 | nginx_container_ports                 | list(string) | no       |                 | List of container ports to expose. Uses `docker` cli syntax |
 | nginx_container_volumes               | list(string) | no       |                 | List of volumes to mount in the container.  Uses `docker` cli syntax |
 | nginx_page_templates                  | list(string) | no       |                 | List of playbook-relative paths for static pages |
