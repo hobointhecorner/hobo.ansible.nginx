@@ -50,7 +50,6 @@
       - "{{ nginx_config_dir }}/config"
       - "{{ nginx_config_dir }}/scripts"
       - "{{ nginx_mounts.servers.src }}"
-      - "{{ nginx_mounts.logs.src }}"
       - "{{ nginx_mounts.pages.src }}"
 
 - name: Ensure nginx group(s)
