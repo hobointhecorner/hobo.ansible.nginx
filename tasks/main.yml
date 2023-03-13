@@ -83,6 +83,17 @@
     mode: "2755"
     state: directory
 
+- name: Ensure nginx log directory
+  become: yes
+  tags:
+    - nginx
+  file:
+    path: "{{ nginx_mounts.logs.src }}"
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
+    mode: "2751"
+
 - name: Template nginx scripts
   notify: Reload nginx service
   become: yes
