@@ -53,12 +53,13 @@
       - "{{ nginx_mounts.logs.src }}"
       - "{{ nginx_mounts.pages.src }}"
 
-- name: Ensure nginx group
+- name: Ensure nginx group(s)
   become: yes
   tags:
     - nginx
+  loop: "{{ [nginx_user, nginx_group]|unique }}"
   group:
-    name: "{{ nginx_group }}"
+    name: "{{ item }}"
 
 - name: Ensure nginx user
   become: yes
@@ -66,10 +67,22 @@
     - nginx
   user:
     name: "{{ nginx_user }}"
-    group: "{{ nginx_group }}"
+    group: "{{ nginx_user }}"
+    append: yes
     groups:
       - docker
+      - "{{ nginx_group }}"
+
+- name: Ensure group membership(s)
+  become: yes
+  tags:
+    - nginx
+  loop: "{{ nginx_group_members }}"
+  user:
+    name: "{{ item }}"
     append: yes
+    groups:
+      - "{{ nginx_group }}"
 
 - name: Ensure nginx configuration directories
   become: yes

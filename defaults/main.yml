@@ -9,6 +9,7 @@ nginx_force_restart: no
 nginx_user: nginx
 nginx_group: nginx
 nginx_owner: root
+nginx_group_members: []
 
 nginx_config_template:
 nginx_config_default_worker_processes: auto
