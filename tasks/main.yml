@@ -69,8 +69,8 @@
     group: "{{ nginx_user }}"
     append: yes
     groups:
-      - docker
       - "{{ nginx_group }}"
+      - docker
 
 - name: Ensure group membership(s)
   become: yes
